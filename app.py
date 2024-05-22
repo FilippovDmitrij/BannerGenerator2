@@ -9,7 +9,7 @@ from copy import deepcopy
 import os
 
 app = Flask(__name__)
-CORS(app)  # Включить CORS для всех маршрутов
+CORS(app, resources={r"/*": {"origins": "http://marija.fit"}})
 
 async def extract_and_load_json(json_data):
     # Очистка строки от markdown-форматирования, если оно есть
