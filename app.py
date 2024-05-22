@@ -11,6 +11,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def index():
+    return jsonify({"message": "Hello from Flask backend!"}), 200
+    
 async def extract_and_load_json(json_data):
     # Очистка строки от markdown-форматирования, если оно есть
     if json_data.startswith('```json'):
