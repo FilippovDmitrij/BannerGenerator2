@@ -28,7 +28,7 @@ def before_request():
 
         return response
 
-@app.route('/api/generate-ad2', methods=['POST'])
+@app.route('/api/generate-ad2_TEST', methods=['POST'])
 def index():
     # Получаем текущий каталог, где запущен скрипт
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -213,9 +213,17 @@ async def generate_ad_async():
     # Получаем текущий каталог, где запущен скрипт
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Создаем полный путь к JSON-файлу
-    json_file_path = os.path.join(current_dir, 'data', 'polotno.json')
-
+    # ЗАГРУЗКА СООТВЕТСТВУЮЩЕГО JSON-ШАБЛОНА
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if aspect_ratio == '1:1':
+        json_file_path = os.path.join(current_dir, 'data', 'polotno_1_1.json')
+    elif aspect_ratio == '16:9':
+        json_file_path = os.path.join(current_dir, 'data', 'polotno_16_9.json')
+    elif aspect_ratio == '9:16':
+        json_file_path = os.path.join(current_dir, 'data', 'polotno_9_16.json')
+    else:
+        return jsonify({"error": "Unsupported aspect ratio"}), 400
+        
     # Загрузите JSON-шаблон
     with open(json_file_path, 'r') as f:
         template = json.load(f)
