@@ -9,11 +9,11 @@ from copy import deepcopy
 import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://bannergenerator2.onrender.com"}})
+CORS(app, resources={r"/*": {"origins": "https://bannergeneratorreact.onrender.com"}}, supports_credentials=True)
 
 @app.route('/api/generate-ad', methods=['POST'])
 def index():
-    return jsonify({"message": "Hello from Flask backend!"}), 200
+    return jsonify({"message": "Hello from Flask backend!"})
     
 async def extract_and_load_json(json_data):
     # Очистка строки от markdown-форматирования, если оно есть
