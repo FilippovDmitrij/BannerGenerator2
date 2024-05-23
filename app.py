@@ -9,9 +9,9 @@ from copy import deepcopy
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://bannergenerator2.onrender.com"}})
 
-@app.route('/')
+@app.route('/api/generate-ad', methods=['POST'])
 def index():
     return jsonify({"message": "Hello from Flask backend!"}), 200
     
@@ -150,7 +150,7 @@ async def generate_image(prompt, aspect_ratio):
         else:
             return {"status": "failed", "message": "Unable to complete the image processing."}
 
-@app.route('/api/generate-ad', methods=['POST'])
+@app.route('/api/generate-ad2', methods=['POST'])
 def generate_ad():
     return async_to_sync(generate_ad_async)()  # обертываем асинхронную функцию
 
