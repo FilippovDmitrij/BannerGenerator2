@@ -15,6 +15,19 @@ CORS(app, resources={r"/*": {"origins": "https://bannergeneratorreact.onrender.c
 API_KEY_OPENAI = os.getenv('API_KEY_OPENAI')
 X_API_KEY = os.getenv('X_API_KEY')
 
+@app.before_request
+def before_request():
+    if request.method == 'OPTIONS':
+        response = app.make_default_options_response()
+        headers = response.headers
+
+        headers['Access-Control-Allow-Origin'] = 'https://bannergeneratorreact.onrender.com'
+        headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+        headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers', '*')
+        headers['Access-Control-Allow-Credentials'] = 'true'
+
+        return response
+
 @app.route('/api/generate-ad2', methods=['POST'])
 def index():
     # Получаем текущий каталог, где запущен скрипт
