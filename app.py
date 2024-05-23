@@ -11,7 +11,11 @@ import os
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "https://bannergeneratorreact.onrender.com"}}, supports_credentials=True)
 
-@app.route('/api/generate-ad', methods=['POST'])
+# Получение API ключей из переменных среды
+API_KEY_OPENAI = os.getenv('API_KEY_OPENAI')
+X_API_KEY = os.getenv('X_API_KEY')
+
+@app.route('/api/generate-ad2', methods=['POST'])
 def index():
     # Получаем текущий каталог, где запущен скрипт
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -74,7 +78,7 @@ async def update_template(template, ad_text_headline, ad_text_description, image
     return template_copy
 async def generate_prompts(company_name, campaign_description):
     """Генерирует заголовок и текст рекламы, а также описание для изображения."""
-    client = AsyncOpenAI(api_key="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")
+    client = AsyncOpenAI(api_key=API_KEY_OPENAI)
 
     async with client:
         ad_prompt = ("""USE ONLY RUSSIAN LANGUAGE. Generate a catchy ad headline and text for an advertisement. For company:"""+ company_name +""" and campaign"""+ campaign_description +""". The headline should have 5 words, and the description should have 10 words."""
@@ -111,7 +115,7 @@ The final prompt should be written as a sentence with commas. The entire prompt 
 
 async def generate_image(prompt, aspect_ratio):
     """Генерирует изображение с помощью Midjourney API (последовательно)."""
-    headers = {"X-API-KEY": "75fae1f07d05a75f27a05cfceb020f0f255ca278ad1337b2f2671271c4676280"}
+    headers = {"X-API-KEY": X_API_KEY}
     async with aiohttp.ClientSession() as session:
         # Шаг 1: Запрос на генерацию изображения
         async with session.post(
@@ -160,7 +164,7 @@ async def generate_image(prompt, aspect_ratio):
         else:
             return {"status": "failed", "message": "Unable to complete the image processing."}
 
-@app.route('/api/generate-ad2', methods=['POST'])
+@app.route('/api/generate-ad', methods=['POST'])
 def generate_ad():
     return async_to_sync(generate_ad_async)()  # обертываем асинхронную функцию
 
