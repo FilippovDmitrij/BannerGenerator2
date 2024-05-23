@@ -13,7 +13,17 @@ CORS(app, resources={r"/*": {"origins": "https://bannergeneratorreact.onrender.c
 
 @app.route('/api/generate-ad', methods=['POST'])
 def index():
-    return jsonify({"message": "Hello from Flask backend!"})
+    # Получаем текущий каталог, где запущен скрипт
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Создаем полный путь к JSON-файлу
+    json_file_path = os.path.join(current_dir, 'data', 'polotno.json')
+    
+    # Загрузите JSON-шаблон
+    with open(json_file_path, 'r') as f:
+        template = json.load(f)
+
+    return jsonify(template)
     
 async def extract_and_load_json(json_data):
     # Очистка строки от markdown-форматирования, если оно есть
