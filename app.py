@@ -83,23 +83,32 @@ async def update_template(template, ad_text_headline, ad_text_description, image
         for child in page['children']:
             if child['type'] == 'image' and child['name'] == '{background_img}' and 'src' in child:
                 child['src'] = image_url
-            elif child['type'] == 'text' and child['text'] == '{text_headline}':
+            elif child['type'] == 'text' and child['name'] == '{text_headline}':
                 child['text'] = ad_text_headline
-            elif child['type'] == 'text' and child['text'] == '{text_description}':
+            elif child['type'] == 'text' and child['name'] == '{text_description}':
                 child['text'] = ad_text_description
 
     return template_copy
-async def generate_prompts(company_name, campaign_description):
+async def generate_prompts(banner_theme, product, style):
     """Генерирует заголовок и текст рекламы, а также описание для изображения."""
     client = AsyncOpenAI(api_key=API_KEY_OPENAI)
 
     async with client:
-        ad_prompt = ("""USE ONLY RUSSIAN LANGUAGE. Generate a catchy ad headline and text for an advertisement. For company:"""+ company_name +""" and campaign"""+ campaign_description +""". The headline should have 5 words, and the description should have 10 words."""
-                     """"You should return only the result in JSON format without other text. For example:"""
-                     """{'headline': 'advertising headline','description': 'advertising description'}""")
+        ad_prompt = ("""USE ONLY RUSSIAN LANGUAGE.Generate a headline and description for an advertising banner for """ + banner_theme + """. 
+        The headline should be no more than 5 words, and the description should be no more than 10 words, emphasizing the key benefits and unique value of the """ + product + """. 
+        
+        You can follow one of the rules for generation:
+        Generate a headline that summarizes the benefits of [product/service] for [target audience].
+        Create a headline that emphasizes the key features of [product/service] for [target audience].
+        Write a headline that conveys the unique value proposition of [product/service] compared to similar offerings.
+        Formulate a headline that showcases the results customers can expect from using [product/service].
+        Draft a headline that highlights the problem [product/service] solves for [target audience].
+        
+        You should return only the result in JSON format without other text. For example: 
+        {'headline': 'advertising headline','description': 'advertising description'}""")
 
         ad_text = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             response_format={"type": "json_object"},
             messages=[{"role": "system", "content": ad_prompt}]
         )
@@ -118,10 +127,21 @@ Where:
 [Technical and Artistic Details]: Detailed attributes about the artistic execution.
 The final prompt should be written as a sentence with commas. The entire prompt should be no more than 60 words."""
 
+        #image_description = await client.chat.completions.create(
+        #    model="gpt-4o",
+        #    messages=[{"role": "system", "content": md_prompt},
+        #              {"role":"user", "content": "Creating prompts for Midjourney. For company:"+company_name+" and campaign "+campaign_description}]
+        #)
+
+
+        # PROMPT FOR MIDJOURNEY TEMPLATE
+
+        md_prompt_template = f"Create a banner ad for facebook on [ {banner_theme} ] promoting product [ {product} ] use style [ {style} ]"
+
         image_description = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "system", "content": md_prompt},
-                      {"role":"user", "content": "Creating prompts for Midjourney. For company:"+company_name+" and campaign "+campaign_description}]
+            model="gpt-4o",
+            messages=[{"role": "system", "content": "You must translate the template into English."},
+                      {"role":"user", "content": "Template: " + md_prompt_template }]
         )
 
     return ad_text.choices[0].message.content, image_description.choices[0].message.content
@@ -183,17 +203,19 @@ def generate_ad():
 
 async def generate_ad_async():
     data = request.get_json()
-    company_name = data.get('companyName')
-    campaign_description = data.get('campaignDescription')
-    aspect_ratio = data.get('aspect_ratio')
+    banner_theme = data.get('bannerTheme')
+    product = data.get('product')
+    style = data.get('style')
+    aspect_ratio = data.get('size')
     width = data.get('width')
     height = data.get('height')
 
     print(data)
 
     #ЗАГОЛОВОК И ПРОМПТ ДЛЯ ИЗОБРАЖЕНИЯ
-    ad_text, image_description = await generate_prompts(company_name,
-                                                        campaign_description)  # Передайте данные в функцию генерации
+    ad_text, image_description = await generate_prompts(banner_theme,
+                                                        product,
+                                                        style)  # Передайте данные в функцию генерации
 
 
     ad_text_json = await extract_and_load_json(ad_text)
